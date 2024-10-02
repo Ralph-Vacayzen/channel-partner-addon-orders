@@ -8,11 +8,16 @@ st.caption('VACAYZEN')
 st.title('Channel Partner Orders')
 st.info('Coorelating add-on orders to channel partner homes.')
 
+l, r = st.columns(2)
+cpao_prepayments   = l.file_uploader('CPAO_Prepayments.csv', 'CSV')
+cpao_latlong       = r.file_uploader('CPAO_LatLong.csv', 'CSV')
 partner_properties = st.file_uploader('Partner Properties','CSV')
 
-if partner_properties:
+if partner_properties and cpao_prepayments and cpao_latlong:
     
-    pp = pd.read_csv(partner_properties, index_col=False)
+    cpaop  = pd.read_csv(cpao_prepayments, index_col=False)
+    cpaoll = pd.read_csv(cpao_latlong, index_col=False)
+    pp     = pd.read_csv(partner_properties, index_col=False)
 
     partner_column = 'PARTNER'
     order_column   = 'ORDER #'
@@ -26,4 +31,6 @@ if partner_properties:
 
     sppdf = ppdf[ppdf[partner_column].isin(partners)]
 
-    sppdf
+    latlong = pd.merge(sppdf, cpaoll, how='left', left_on=order_column, right_on='ID')
+    latlong = latlong[[partner_column,'AgrmtJobAddrLat','AgrmtJobAddrLong']]
+    latlong
